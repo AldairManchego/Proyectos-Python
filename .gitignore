@@ -1,0 +1,28 @@
+# Configuración sensible
+src/routes/
+src/config/
+Paths.py
+
+# Procesamientos temporales
+sr*/processing/
+
+# Python
+__pycache__*
+*.py[cod]
+
+# Datos generados
+data/
+*.csv
+
+# Entornos virtuales
+venv/
+.venv/
+
+# Variables de entorno
+.env
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
