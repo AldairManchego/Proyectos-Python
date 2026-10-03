@@ -25,6 +25,7 @@ from routes.Paths import (
 )
 
 from utils.Processing_OPL import data_opl, guardar_opl
+from utils.Processing_OPL_Historico import procesar_opl
 from utils.Processing_Arbol import limpiar_df_arbol, guardar_arbol
 
 from utils.Processing_MasterSkill import limpiar_masterskill, guardar_masterskill
@@ -208,6 +209,11 @@ def main():
         )
         log_step("Árbol guardado")
 
+        # ==================================================
+        log_step("Guardado OPL_HISTORICO")
+        df_opl = procesar_opl(save_file=True)
+        log_step(f"Data OPL Historico. Registros: {len(df_opl):,}")
+        
         # ==================================================
         fin = datetime.now()
         log_step(

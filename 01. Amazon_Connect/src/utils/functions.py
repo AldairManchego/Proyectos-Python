@@ -211,7 +211,10 @@ def detect_encoding(file: Path) -> str:
     return "utf-8"
 
 #***************************leer archivos csv y excel de una carpeta***************************
-def _read_files_from_folder(file: Path) -> pd.DataFrame:
+def _read_files_from_folder(
+        file: Path,
+        sheet_name: str | int | None = None
+        ) -> pd.DataFrame:
 
     suffix = file.suffix.lower()
 
@@ -242,7 +245,10 @@ def _read_files_from_folder(file: Path) -> pd.DataFrame:
             )
 
     elif suffix == ".xlsx":
-        return pd.read_excel(file)
+        return pd.read_excel(
+            file,
+            sheet_name=sheet_name or 0
+            )
 
     raise ValueError(
         f"Extension o archivo no valida: {suffix}"
@@ -253,7 +259,8 @@ def load_files_from_folder(
         folder_route: "str | Path",
         require_columns: set,
         delete_dup_subset: "list[str] | None" = None,
-        file_extensions: tuple = (".csv", ".xlsx")
+        file_extensions: tuple = (".csv", ".xlsx"),
+        sheet_name: str | int | None = None
         )-> pd.DataFrame:
     
     folder_route = Path(folder_route)
@@ -266,7 +273,9 @@ def load_files_from_folder(
             continue
 
         try:
-            df = _read_files_from_folder(file)
+            df = _read_files_from_folder(
+                file,
+                sheet_name=sheet_name)
             df.columns = (
                 df.columns.astype(str)
                 .str.strip()
