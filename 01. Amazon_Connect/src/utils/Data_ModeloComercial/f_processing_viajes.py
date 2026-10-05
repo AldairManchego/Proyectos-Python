@@ -9,7 +9,6 @@ from routes.Paths import(
     Ruta_local
 )
 from utils.functions import load_files_from_folder
-from utils.Data_ModeloComercial.b_processing_crm_ventas import process_crm_ventas
 
 columnas_crm_requeridas = [
         "NÚMERO_DOCUMENTO_DEL_CLIENTE",
@@ -52,10 +51,7 @@ required_columns =[
 "numero de documento del titular"
 ]
 
-def cargar_insumos() -> tuple[
-    pd.DataFrame,
-    pd.DataFrame
-    ]:
+def cargar_insumos() -> pd.DataFrame: 
 
     """Carga df Viajes"""
     df_viajes = load_files_from_folder(
@@ -91,67 +87,8 @@ def cargar_insumos() -> tuple[
     df_viajes["date"] = pd.to_datetime(df_viajes["date"]).dt.date
     df_viajes["servicios"] = pd.to_numeric(df_viajes["servicios"])
 
-#*****************    """Carga data Crm Ventas""" *********************
-
-    df_crm = process_crm_ventas(save_file = False)
-    columnas_crm_requeridas = [
-        "NÚMERO_DOCUMENTO_DEL_CLIENTE",
-        "RADICADO",
-        "IdTipificacion",
-        "NIVEL_1",
-        "NIVEL_2",
-        "NIVEL_3",
-        "TIPO_DE_LLAMADA",
-        "NOMBRE_CLIENTE",
-        "CONTACTO_DE_CLIENTE",
-        "NOMBRE_ALIADO",
-        "Id_opl",
-        "NOMBRE_ASESOR",
-        "Correo_contratista",
-        "FECHA_DE_INICIO",
-        "START_DATE",
-        "FECHA_FIN",
-        "END_DATE",
-        "START_MONTH_DATE",
-        "OFRECIMIENTO_EFECTIVO",
-        "Aplica_Ofrecimiento",
-        "VALOR_PUNTOS",
-        "CANAL_DE_ATENCIÓN",
-        "Colas",
-        "SKILL",
-        "IdMasterSkill",
-        "ESTADO_GESTIÓN",
-        "NÚMERO_PEDIDO"
-    ]
-
-    df_crm["FECHA_DE_INICIO"] = pd.to_datetime(
-        df_crm["FECHA_DE_INICIO"],
-        errors="coerce"
-    )
-
-    df_crm["FECHA_FIN"] = pd.to_datetime(
-        df_crm["FECHA_FIN"],
-        errors="coerce"
-    )
-
-    df_crm["Prioridad"] = (
-        df_crm["OFRECIMIENTO_EFECTIVO"]
-            .map({"Si": 1, "No": 2})
-    )
-
-    df_crm = df_crm.sort_values(
-        by=[
-            "NÚMERO_DOCUMENTO_DEL_CLIENTE",
-            "START_DATE",
-            "Prioridad"
-        ]
-    )
-    df_crm["NÚMERO_DOCUMENTO_DEL_CLIENTE"] = df_crm["NÚMERO_DOCUMENTO_DEL_CLIENTE"].astype(str)
-
-    return(
-        df_viajes,
-        df_crm
-    )
+    return df_viajes
+    
 
 
 def transformar_viajes_ventas(
@@ -160,7 +97,6 @@ def transformar_viajes_ventas(
 )-> pd.DataFrame:
 
     df_viajes = df_viajes.copy()
-    df_crm = df_crm.copy()
     df_viajes = df_viajes.merge(
         df_crm[columnas_crm_requeridas],
             how="left",
@@ -186,7 +122,7 @@ def transformar_viajes_ventas(
 
     return df_viajes
 
-def guardar_crm(
+def guardar_viajes(
     df_viajes: pd.DataFrame,
     ruta_global: str | Path,
     ruta_local: str | Path,
@@ -200,19 +136,20 @@ def guardar_crm(
 
 
 def process_viajes_ventas(
+    df_crm: pd.DataFrame,
     save_file: bool = False,
 ) -> pd.DataFrame:
 
-    df_viajes, df_crm = cargar_insumos()
+    df_viajes = cargar_insumos()
     df_viajes = transformar_viajes_ventas(
         df_viajes=df_viajes,
         df_crm=df_crm
     )
 
     if save_file:
-        guardar_crm(
-            df_viajes,
-            Ruta_global,
-            Ruta_local,
+        guardar_viajes(
+            df_viajes=df_viajes,
+            ruta_global=Ruta_global,
+            ruta_local=Ruta_local,
         )
     return df_viajes

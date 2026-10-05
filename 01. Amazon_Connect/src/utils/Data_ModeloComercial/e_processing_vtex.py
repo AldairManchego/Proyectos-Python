@@ -9,7 +9,6 @@ from routes.Paths import(
     Ruta_local
 )
 from utils.functions import load_files_from_folder
-from utils.Data_ModeloComercial.b_processing_crm_ventas import process_crm_ventas
 
 columnas_crm_requeridas = [
         "NÚMERO_DOCUMENTO_DEL_CLIENTE",
@@ -58,10 +57,7 @@ required_columns = [
      "payment value"
 ]
 
-def cargar_insumos() -> tuple[
-    pd.DataFrame,
-    pd.DataFrame
-    ]:
+def cargar_insumos() -> pd.DataFrame:
 
     """Carga df Vtex"""
 
@@ -104,37 +100,7 @@ def cargar_insumos() -> tuple[
     df_vtex = df_vtex.sort_values(by=["client document", "creation date"], ascending=[True, False]).reset_index(drop=True)
     df_vtex["client document"] = df_vtex["client document"].astype(str)
 
-    """Carga data Crm Ventas"""
-    df_crm = process_crm_ventas(save_file = False)
-
-    df_crm["FECHA_DE_INICIO"] = pd.to_datetime(
-        df_crm["FECHA_DE_INICIO"],
-        errors="coerce"
-    )
-
-    df_crm["FECHA_FIN"] = pd.to_datetime(
-        df_crm["FECHA_FIN"],
-        errors="coerce"
-    )
-
-    df_crm["Prioridad"] = (
-        df_crm["OFRECIMIENTO_EFECTIVO"]
-            .map({"Si": 1, "No": 2})
-    )
-
-    df_crm = df_crm.sort_values(
-        by=[
-            "NÚMERO_DOCUMENTO_DEL_CLIENTE",
-            "START_DATE",
-            "Prioridad"
-        ]
-    )
-    df_crm["NÚMERO_DOCUMENTO_DEL_CLIENTE"] = df_crm["NÚMERO_DOCUMENTO_DEL_CLIENTE"].astype(str)
-
-    return(
-        df_vtex,
-        df_crm
-    )
+    return df_vtex
 
 def transformar_vtex_ventas(
     df_vtex: pd.DataFrame,
@@ -142,7 +108,6 @@ def transformar_vtex_ventas(
 )-> pd.DataFrame:
 
     df_vtex = df_vtex.copy()
-    df_crm = df_crm.copy()
     df_vtex = df_vtex.merge(
     df_crm[columnas_crm_requeridas],
         how="left",
@@ -167,7 +132,7 @@ def transformar_vtex_ventas(
     )
     return df_vtex
 
-def guardar_crm(
+def guardar_vtex(
     df_vtex: pd.DataFrame,
     ruta_global: str | Path,
     ruta_local: str | Path,
@@ -181,19 +146,20 @@ def guardar_crm(
 
 
 def process_vtex_ventas(
+    df_crm: pd.DataFrame,
     save_file: bool = False,
 ) -> pd.DataFrame:
 
-    df_vtex, df_crm = cargar_insumos()
+    df_vtex = cargar_insumos()
     df_vtex = transformar_vtex_ventas(
         df_vtex=df_vtex,
         df_crm=df_crm
     )
 
     if save_file:
-        guardar_crm(
-            df_vtex,
-            Ruta_global,
-            Ruta_local,
+        guardar_vtex(
+            df_vtex=df_vtex,
+            ruta_global=Ruta_global,
+            ruta_local=Ruta_local,
         )
     return df_vtex
