@@ -10,7 +10,6 @@ from routes.Paths import(
 )
 
 from utils.functions import load_files_from_folder
-from utils.Data_ModeloComercial.b_processing_crm_ventas import process_crm_ventas
 
 columnas_crm_requeridas = [
         "NÚMERO_DOCUMENTO_DEL_CLIENTE",
@@ -52,10 +51,7 @@ columns_soat =[
     "file_date"
 ]
 
-def cargar_insumos() -> tuple[
-    pd.DataFrame,
-    pd.DataFrame
-    ]:
+def cargar_insumos() -> pd.DataFrame:
 
     """Carga df Soat"""
     required_columns =[
@@ -103,35 +99,8 @@ def cargar_insumos() -> tuple[
         df_soat["puntos red dinero"]
     )
 
-    """Carga crm"""
-    df_crm = process_crm_ventas(save_file = False)
-    df_crm["FECHA_DE_INICIO"] = pd.to_datetime(
-    df_crm["FECHA_DE_INICIO"],
-    errors="coerce"
-    )
+    return df_soat
 
-    df_crm["FECHA_FIN"] = pd.to_datetime(
-        df_crm["FECHA_FIN"],
-        errors="coerce"
-    )
-
-    df_crm["Prioridad"] = (
-        df_crm["OFRECIMIENTO_EFECTIVO"]
-            .map({"Si": 1, "No": 2})
-    )
-
-    df_crm = df_crm.sort_values(
-        by=[
-            "NÚMERO_DOCUMENTO_DEL_CLIENTE",
-            "START_DATE",
-            "Prioridad"
-        ]
-    )
-    df_crm["NÚMERO_DOCUMENTO_DEL_CLIENTE"] = df_crm["NÚMERO_DOCUMENTO_DEL_CLIENTE"].astype(str)
-
-    return(
-        df_soat, df_crm
-    )
 
 def transformar_soat_ventas(
     df_soat: pd.DataFrame,
@@ -139,7 +108,6 @@ def transformar_soat_ventas(
 )-> pd.DataFrame:
 
     df_soat = df_soat.copy()
-    df_crm = df_crm.copy()
 
     df_soat = df_soat.merge(
         df_crm[columnas_crm_requeridas],
@@ -165,7 +133,7 @@ def transformar_soat_ventas(
     )
     return df_soat
 
-def guardar_crm(
+def guardar_soat(
     df_soat: pd.DataFrame,
     ruta_global: str | Path,
     ruta_local: str | Path,
@@ -179,17 +147,18 @@ def guardar_crm(
 
 
 def process_soat_ventas(
+    df_crm: pd.DataFrame,
     save_file: bool = False,
 ) -> pd.DataFrame:
 
-    df_soat, df_crm = cargar_insumos()
+    df_soat = cargar_insumos()
     df_soat = transformar_soat_ventas(
         df_soat=df_soat,
         df_crm=df_crm
     )
 
     if save_file:
-        guardar_crm(
+        guardar_soat(
             df_soat,
             Ruta_global,
             Ruta_local,

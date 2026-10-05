@@ -45,6 +45,15 @@ from utils.Processing_KpiOverAll import ejecutar_kpioverall
 
 from utils.Processing_Csat import ejecutar_csat
 
+
+from routes.Paths import Ruta_historico_arbol
+from utils.Data_ModeloComercial.a_processing_arbol_tip_historico import _load_arbol_historico, guardar_arbol_historico
+from utils.Data_ModeloComercial.a_processing_crm import process_crm_ventas
+from utils.Data_ModeloComercial.c_processing_bonos import process_bonos_ventas 
+from utils.Data_ModeloComercial.d_processing_soat import process_soat_ventas
+from utils.Data_ModeloComercial.e_processing_vtex import process_vtex_ventas
+from utils.Data_ModeloComercial.f_processing_viajes import process_viajes_ventas
+
 def log_step(mensaje: str) -> None:
     """
     Imprime mensajes con timestamp para seguimiento
@@ -213,6 +222,27 @@ def main():
         log_step("Guardado OPL_HISTORICO")
         df_opl = procesar_opl(save_file=True)
         log_step(f"Data OPL Historico. Registros: {len(df_opl):,}")
+
+        # ==================================================
+
+        """Data Ventas"""
+        df_arbol_hist = guardar_arbol_historico(_load_arbol_historico(Ruta_historico_arbol))
+        log_step(f"Guardado Arbol Tipificaciones Historico. Tot_Reg: {len(df_arbol_hist)}, Max_Reg: {df_arbol_hist["source_file"].max()}")
+
+        df_crm_ventas = process_crm_ventas(save_file=True)
+        log_step(f"Guardado Data CRM Ventas. Tot_Reg: {len(df_crm_ventas)}, Max_Reg: {df_crm_ventas["FECHA_DE_INICIO"].max()}")
+
+        df_bonos = process_bonos_ventas(df_crm=df_crm_ventas, save_file=True)
+        log_step(f"Guardado Data Bonos Ventas. Tot_Reg: {len(df_bonos)}, Max_Reg: {df_bonos["order_date"].max()}")
+
+        df_soat = process_soat_ventas(df_crm=df_crm_ventas,save_file=True)
+        log_step(f"Guardado Data Soat Ventas. Tot_Reg: {len(df_soat)}, Max_Reg: {df_soat["fecha_homologada"].max()}")
+
+        df_vtex = process_vtex_ventas(df_crm=df_crm_ventas,save_file=True)
+        log_step(f"Guardado Data Vtex Ventas. Tot_Reg: {len(df_vtex)}, Max_Reg: {df_vtex["creation date"].max()}")
+
+        df_viajes = process_viajes_ventas(df_crm=df_crm_ventas,save_file=True)
+        log_step(f"Guardado Data Vaijes Ventas. Tot_Reg: {len(df_viajes)}, Max_Reg: {df_viajes["fecha_transaccion"].max()}")
         
         # ==================================================
         fin = datetime.now()

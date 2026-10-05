@@ -9,18 +9,8 @@ from routes.Paths import(
     Ruta_local
 )
 from utils.functions import load_files_from_folder
-from utils.Data_ModeloComercial.b_processing_crm_ventas import process_crm_ventas
 
-columns_bonos = [
-    "supplier",
-    "order_id",
-    "order_date",
-    "numero documento",
-    "puntos",
-    "source_file",
-    "file_date"
-]
-columnas_crm_requeridas = [
+COLUMNAS_CRM_VENTAS = [
     "NÚMERO_DOCUMENTO_DEL_CLIENTE",
     "RADICADO",
     "IdTipificacion",
@@ -47,13 +37,21 @@ columnas_crm_requeridas = [
     "SKILL",
     "IdMasterSkill",
     "ESTADO_GESTIÓN",
-    "NÚMERO_PEDIDO"
+    "NÚMERO_PEDIDO",
 ]
 
-def cargar_insumos() -> tuple[
-    pd.DataFrame,
-    pd.DataFrame
-]:
+columns_bonos = [
+    "supplier",
+    "order_id",
+    "order_date",
+    "numero documento",
+    "puntos",
+    "source_file",
+    "file_date"
+]
+
+def cargar_insumos() -> pd.DataFrame:
+
     """Carga y preparacion df Bonos"""
 
     Required_columns = [
@@ -81,53 +79,17 @@ def cargar_insumos() -> tuple[
         .astype(str)
         .str.strip()
     )
-
-    """Carga y preparacion df CRM Ventas"""
-    df_crm = process_crm_ventas(save_file = False)
-
-    df_crm["FECHA_DE_INICIO"] = pd.to_datetime(
-                                                df_crm["FECHA_DE_INICIO"],
-                                                errors="coerce")
-
-    df_crm["FECHA_FIN"] = pd.to_datetime(
-                                            df_crm["FECHA_FIN"],
-                                            errors="coerce"
-                                        )
-
-    df_crm["Prioridad"] = (
-                            df_crm["OFRECIMIENTO_EFECTIVO"]
-                            .map({"Si": 1, "No": 2})
-                        )
-
-    df_crm["NÚMERO_DOCUMENTO_DEL_CLIENTE"] = (
-        df_crm["NÚMERO_DOCUMENTO_DEL_CLIENTE"]
-        .fillna("")
-        .astype(str)
-        .str.strip()
-    )
-
-    df_crm = df_crm.sort_values(
-        by=[
-            "NÚMERO_DOCUMENTO_DEL_CLIENTE",
-            "START_DATE",
-            "Prioridad"
-        ]
-    )
-    return(
-        df_bonos,
-        df_crm
-    )
+    return df_bonos
 
 def transformar_bonos_venta(
         df_bonos: pd.DataFrame,
         df_crm: pd.DataFrame
 ) -> pd.DataFrame:
     
-    df_crm = df_crm.copy()
     df_bonos = df_bonos.copy()
 
     df_bonos = df_bonos.merge(
-    df_crm[columnas_crm_requeridas],
+    df_crm[COLUMNAS_CRM_VENTAS],
     how="left",
     left_on=[
         "numero documento",
@@ -150,7 +112,7 @@ def transformar_bonos_venta(
     )
     return df_bonos
 
-def guardar_crm(
+def guardar_bonos(
     df_bonos: pd.DataFrame,
     ruta_global: str | Path,
     ruta_local: str | Path,
@@ -163,21 +125,23 @@ def guardar_crm(
 
 
 def process_bonos_ventas(
+    df_crm: pd.DataFrame,
     save_file: bool = False,
 ) -> pd.DataFrame:
 
-    df_bonos, df_crm = cargar_insumos()
+    df_bonos = cargar_insumos()
 
     df_bonos = transformar_bonos_venta(
         df_bonos=df_bonos,
-        df_crm=df_crm
+        df_crm=df_crm,
     )
 
     if save_file:
-        guardar_crm(
-            df_bonos,
-            Ruta_global,
-            Ruta_local,
+
+        guardar_bonos(
+            df_bonos=df_bonos,
+            ruta_global=Ruta_global,
+            ruta_local=Ruta_local,
         )
 
     return df_bonos
