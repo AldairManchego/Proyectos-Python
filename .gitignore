@@ -26,3 +26,5 @@ venv/
 
 # Jupyter
 .ipynb_checkpoints/
+.vscode/
+*settings.json
