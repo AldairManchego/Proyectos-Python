@@ -85,9 +85,20 @@ def guardar_arbol_historico(
     df: pd.DataFrame,
     ruta_global: str | Path = Ruta_global,
     ruta_local: str | Path = Ruta_local
-) -> None:
+) -> pd.DataFrame:
 
     nombre = "09.Arbol_historico_tipificacion"
 
-    df.to_csv( Path(ruta_global) / f"{nombre}.csv", index=False, encoding="utf-8")
-    df.to_csv(Path(ruta_local) / f"{nombre}.csv", index=False, encoding="utf-8")
+    df.to_csv(
+        Path(ruta_global) / f"{nombre}.csv",
+        index=False,
+        encoding="utf-8"
+    )
+
+    df.to_csv(
+        Path(ruta_local) / f"{nombre}.csv",
+        index=False,
+        encoding="utf-8"
+    )
+
+    return df

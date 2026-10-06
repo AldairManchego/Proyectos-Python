@@ -227,22 +227,42 @@ def main():
 
         """Data Ventas"""
         df_arbol_hist = guardar_arbol_historico(_load_arbol_historico(Ruta_historico_arbol))
-        log_step(f"Guardado Arbol Tipificaciones Historico. Tot_Reg: {len(df_arbol_hist)}, Max_Reg: {df_arbol_hist["source_file"].max()}")
+        log_step(f"Guardado Arbol Tipificaciones Historico.")
 
         df_crm_ventas = process_crm_ventas(save_file=True)
-        log_step(f"Guardado Data CRM Ventas. Tot_Reg: {len(df_crm_ventas)}, Max_Reg: {df_crm_ventas["FECHA_DE_INICIO"].max()}")
+        log_step(
+                f"Guardado Data CRM Ventas. "
+                f"Tot_Reg: {len(df_crm_ventas):,}, "
+                f"Max_Reg: {df_crm_ventas['FECHA_DE_INICIO'].max()}"
+            )
 
         df_bonos = process_bonos_ventas(df_crm=df_crm_ventas, save_file=True)
-        log_step(f"Guardado Data Bonos Ventas. Tot_Reg: {len(df_bonos)}, Max_Reg: {df_bonos["order_date"].max()}")
+        log_step(
+                f"Guardado Data Bonos Ventas. "
+                f"Tot_Reg: {len(df_bonos):,}, "
+                f"Max_Reg: {df_bonos['order_date'].max()}"
+            )
 
         df_soat = process_soat_ventas(df_crm=df_crm_ventas,save_file=True)
-        log_step(f"Guardado Data Soat Ventas. Tot_Reg: {len(df_soat)}, Max_Reg: {df_soat["fecha_homologada"].max()}")
+        log_step(
+                f"Guardado Data Soat Ventas. "
+                f"Tot_Reg: {len(df_soat):,}, "
+                f"Max_Reg: {df_soat['fecha_homologada'].max()}"
+            )
 
         df_vtex = process_vtex_ventas(df_crm=df_crm_ventas,save_file=True)
-        log_step(f"Guardado Data Vtex Ventas. Tot_Reg: {len(df_vtex)}, Max_Reg: {df_vtex["creation date"].max()}")
-
+        log_step(
+                f"Guardado Data Vtex Ventas. "
+                f"Tot_Reg: {len(df_vtex):,}, "
+                f"Max_Reg: {df_vtex['creation date'].max()}"
+            )
+        
         df_viajes = process_viajes_ventas(df_crm=df_crm_ventas,save_file=True)
-        log_step(f"Guardado Data Vaijes Ventas. Tot_Reg: {len(df_viajes)}, Max_Reg: {df_viajes["fecha_transaccion"].max()}")
+        log_step(
+                f"Guardado Data Viajes Ventas. "
+                f"Tot_Reg: {len(df_viajes):,}, "
+                f"Max_Reg: {df_viajes['fecha_transaccion'].max()}"
+            )
         
         # ==================================================
         fin = datetime.now()
